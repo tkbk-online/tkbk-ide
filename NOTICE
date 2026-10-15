@@ -1,0 +1,46 @@
+TKBK IDE
+Copyright (c) 2026 TKBK (tkbk.online)
+
+TKBK IDE is a branded distribution of VSCodium. It does not modify the editor's
+source code: the build scripts take an official VSCodium release, change
+product.json, icons and launcher names, and add extensions. All original
+copyright notices and licenses are kept inside the distribution
+(resources/app/LICENSE.txt, resources/app/ThirdPartyNotices.txt, LICENSES.chromium.html).
+
+This product includes software developed by third parties:
+
+VSCodium
+  https://github.com/VSCodium/vscodium
+  Copyright (c) 2018-2026 VSCodium contributors
+  MIT License
+
+Visual Studio Code - Open Source ("Code - OSS")
+  https://github.com/microsoft/vscode
+  Copyright (c) Microsoft Corporation
+  MIT License
+  The "TKBK Dark" color theme derives its token colors from the "Dark Modern" theme of Code - OSS.
+
+Electron, Chromium, Node.js and other components
+  See LICENSES.chromium.html and resources/app/ThirdPartyNotices.txt inside the distribution.
+
+TKBK Agent (built-in extension tkbk-online.tkbk-agent)
+  https://github.com/tkbk-online/tkbk-agent
+  A fork of Cline: https://github.com/cline/cline
+  Copyright (c) 2024-2026 Cline Bot Inc. and contributors
+  Apache License, Version 2.0 (see the NOTICE file of that repository)
+
+Russian Language Pack for Visual Studio Code (bundled .vsix, installed into the user profile)
+  https://github.com/microsoft/vscode-loc
+  Copyright (c) Microsoft Corporation
+  MIT License
+
+GitLens (bundled .vsix, installed into the user profile)
+  https://github.com/gitkraken/vscode-gitlens
+  Copyright (c) 2016-2026 Axosoft, LLC dba GitKraken ("GitKraken")
+  Licensed under the terms stated in the extension's LICENSE file; Pro features are subject to GitKraken's own terms.
+
+Build-time tools (not shipped): sharp (Apache-2.0), rcedit (MIT), Inno Setup (Inno Setup License).
+
+Trademarks: "Visual Studio Code" and the Visual Studio Code logo are trademarks of Microsoft Corporation
+and are not used in this product. "VSCodium" is a trademark of the VSCodium project. TKBK IDE is not
+affiliated with or endorsed by Microsoft, VSCodium, Cline Bot Inc. or GitKraken.

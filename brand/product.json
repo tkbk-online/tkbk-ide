@@ -1,0 +1,58 @@
+{
+  "nameShort": "TKBK IDE",
+  "nameLong": "TKBK IDE",
+  "applicationName": "tkbk-ide",
+  "dataFolderName": ".tkbk-ide",
+  "sharedDataFolderName": ".tkbk-ide-shared",
+  "tunnelApplicationName": "tkbk-ide-tunnel",
+  "win32MutexName": "tkbkide",
+  "win32DirName": "TKBK IDE",
+  "win32NameVersion": "TKBK IDE",
+  "win32RegValueName": "TKBKIDE",
+  "win32AppUserModelId": "TKBK.TKBKIDE",
+  "win32ShellNameShort": "TKBK IDE",
+  "win32TunnelServiceMutex": "tkbkide-tunnelservice",
+  "win32TunnelMutex": "tkbkide-tunnel",
+  "win32x64AppId": "{{7E7C4B1A-2F5E-4C0B-9B6A-1D2B3C4D5E6F}",
+  "win32x64UserAppId": "{{3A9D1F6C-8B2E-4D7A-A5C1-6F0E9B8D7C21}",
+  "win32arm64AppId": "{{A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}",
+  "win32arm64UserAppId": "{{B2C3D4E5-F6A7-4B8C-9D0E-1F2A3B4C5D6E}",
+  "darwinBundleIdentifier": "online.tkbk.ide",
+  "linuxDesktopName": "tkbk-ide",
+  "linuxIconName": "tkbk-ide",
+  "urlProtocol": "tkbk-ide",
+  "licenseName": "MIT",
+  "licenseUrl": "https://github.com/tkbk-online/tkbk-ide/blob/main/LICENSE",
+  "reportIssueUrl": "https://github.com/tkbk-online/tkbk-ide/issues/new",
+  "requestFeatureUrl": "https://github.com/tkbk-online/tkbk-ide/issues/new",
+  "documentationUrl": "https://tkbk.online/docs",
+  "releaseNotesUrl": "https://github.com/tkbk-online/tkbk-ide/releases",
+  "downloadUrl": "https://github.com/tkbk-online/tkbk-ide/releases",
+  "updateUrl": null,
+  "twitterUrl": null,
+  "introductoryVideosUrl": null,
+  "tipsAndTricksUrl": null,
+  "linkProtectionTrustedDomains": {
+    "$append": [
+      "https://tkbk.online",
+      "https://*.tkbk.online",
+      "https://t.me",
+      "https://github.com/tkbk-online",
+      "https://open-vsx.org"
+    ]
+  },
+  "onboardingThemes": {
+    "$prepend": [
+      { "id": "tkbk-dark", "label": "TKBK Dark", "themeId": "TKBK Dark", "type": "dark" }
+    ]
+  },
+  "tkbk": {
+    "homepage": "https://tkbk.online",
+    "login": "https://tkbk.online/login",
+    "buy": "https://tkbk.online/buy",
+    "docs": "https://tkbk.online/docs",
+    "skills": "https://github.com/tkbk-online/skills",
+    "agentExtensionId": "tkbk-online.tkbk-agent",
+    "agentViewContainer": "workbench.view.extension.tkbk-agent-ActivityBar"
+  }
+}

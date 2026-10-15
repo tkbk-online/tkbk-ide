@@ -1,0 +1,97 @@
+{
+  "name": "tkbk-welcome",
+  "displayName": "TKBK IDE: начало работы",
+  "description": "Приветственная страница TKBK IDE, первый запуск, установка комплекта расширений.",
+  "version": "0.1.0",
+  "publisher": "tkbk-online",
+  "license": "MIT",
+  "icon": "icon.png",
+  "engines": { "vscode": "^1.101.0" },
+  "categories": ["Other"],
+  "repository": { "type": "git", "url": "https://github.com/tkbk-online/tkbk-ide" },
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished", "onUri"],
+  "capabilities": {
+    "untrustedWorkspaces": { "supported": true },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      { "command": "tkbk.welcome.open", "title": "Начало работы", "category": "TKBK IDE", "icon": "$(home)" },
+      { "command": "tkbk.openLogin", "title": "Войти через Telegram-бота", "category": "TKBK IDE" },
+      { "command": "tkbk.openBuy", "title": "Купить ключ", "category": "TKBK IDE" },
+      { "command": "tkbk.openSetup", "title": "Подключение: открыть TKBK Agent", "category": "TKBK IDE" },
+      { "command": "tkbk.openDocs", "title": "Документация tkbk.online", "category": "TKBK IDE" },
+      { "command": "tkbk.openSkills", "title": "Скилы TKBK (Skills Hub)", "category": "TKBK IDE" },
+      { "command": "tkbk.installBundled", "title": "Установить комплект расширений заново", "category": "TKBK IDE" }
+    ],
+    "configuration": {
+      "title": "TKBK IDE",
+      "properties": {
+        "tkbk.welcome.showOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Показывать страницу «Начало работы» при запуске TKBK IDE."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "workbench.colorTheme": "TKBK Dark",
+      "workbench.startupEditor": "none",
+      "telemetry.telemetryLevel": "off",
+      "update.mode": "none",
+      "workbench.tips.enabled": false,
+      "gitlens.showWhatsNewAfterUpgrades": false,
+      "gitlens.telemetry.enabled": false,
+      "workbench.welcomePage.walkthroughs.openOnInstall": false
+    },
+    "menus": {
+      "commandPalette": [
+        { "command": "tkbk.welcome.open" },
+        { "command": "tkbk.openLogin" },
+        { "command": "tkbk.openBuy" },
+        { "command": "tkbk.openSetup" },
+        { "command": "tkbk.openDocs" },
+        { "command": "tkbk.openSkills" },
+        { "command": "tkbk.installBundled" }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "tkbk.gettingStarted",
+        "title": "TKBK IDE: подключение за 3 шага",
+        "description": "Ключ TKBK, агент в боковой панели, модели по одному ключу.",
+        "steps": [
+          {
+            "id": "tkbk.step.login",
+            "title": "Войти через Telegram-бота",
+            "description": "Вход на tkbk.online происходит через бота: без пароля и почты.\n[Войти через Telegram-бота](command:tkbk.openLogin)",
+            "media": { "markdown": "walkthrough/login.md" },
+            "completionEvents": ["onCommand:tkbk.openLogin"]
+          },
+          {
+            "id": "tkbk.step.buy",
+            "title": "Купить ключ",
+            "description": "Один ключ cr_… открывает все модели каталога TKBK. Оплата в рублях.\n[Купить ключ](command:tkbk.openBuy)",
+            "media": { "markdown": "walkthrough/buy.md" },
+            "completionEvents": ["onCommand:tkbk.openBuy"]
+          },
+          {
+            "id": "tkbk.step.setup",
+            "title": "Подключение",
+            "description": "Откройте TKBK Agent в боковой панели и вставьте ключ. Модель по умолчанию уже выбрана.\n[Открыть TKBK Agent](command:tkbk.openSetup)",
+            "media": { "markdown": "walkthrough/setup.md" },
+            "completionEvents": ["onCommand:tkbk.openSetup"]
+          },
+          {
+            "id": "tkbk.step.skills",
+            "title": "Скилы и MCP",
+            "description": "59 проверенных скилов и MCP-серверы TKBK для маркетплейсов, CRM и рекламы.\n[Открыть Skills Hub](command:tkbk.openSkills)",
+            "media": { "markdown": "walkthrough/skills.md" },
+            "completionEvents": ["onCommand:tkbk.openSkills"]
+          }
+        ]
+      }
+    ]
+  }
+}

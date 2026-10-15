@@ -1,0 +1,22 @@
+{
+  "name": "tkbk-ide",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TKBK IDE — редактор на базе VSCodium с предустановленным TKBK Agent",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "fetch": "node build/fetch.mjs",
+    "build": "node build/build.mjs",
+    "icons": "node build/icons.mjs",
+    "test": "node --test build/*.test.mjs",
+    "clean": "node build/clean.mjs"
+  },
+  "devDependencies": {
+    "rcedit": "^4.0.1",
+    "sharp": "^0.34.3"
+  }
+}

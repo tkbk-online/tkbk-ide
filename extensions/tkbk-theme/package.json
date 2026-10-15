@@ -1,0 +1,22 @@
+{
+  "name": "tkbk-theme",
+  "displayName": "TKBK Dark Theme",
+  "description": "Тёмная тема TKBK IDE: цвета tkbk.online, база — Dark Modern.",
+  "version": "0.1.0",
+  "publisher": "tkbk-online",
+  "license": "MIT",
+  "icon": "icon.png",
+  "engines": { "vscode": "^1.101.0" },
+  "categories": ["Themes"],
+  "repository": { "type": "git", "url": "https://github.com/tkbk-online/tkbk-ide" },
+  "contributes": {
+    "themes": [
+      {
+        "label": "TKBK Dark",
+        "id": "TKBK Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/tkbk-dark-color-theme.json"
+      }
+    ]
+  }
+}
