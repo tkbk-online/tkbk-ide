@@ -12,7 +12,7 @@
     "fetch": "node build/fetch.mjs",
     "build": "node build/build.mjs",
     "icons": "node build/icons.mjs",
-    "test": "node --test build/*.test.mjs",
+    "test": "node --test build/*.test.mjs extensions/*/*.test.mjs",
     "clean": "node build/clean.mjs"
   },
   "devDependencies": {

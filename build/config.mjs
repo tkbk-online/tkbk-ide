@@ -49,7 +49,7 @@ export const MARKETPLACE_EXTENSIONS = [
 ];
 
 /** Extensions bundled as built-in (resources/app/extensions). */
-export const BUILTIN_EXTENSIONS_FROM_REPO = ["tkbk-welcome", "tkbk-theme"];
+export const BUILTIN_EXTENSIONS_FROM_REPO = ["tkbk-welcome", "tkbk-theme", "tkbk-complete"];
 
 /** Where to get the TKBK Agent .vsix when --agent-vsix is not given. */
 export const AGENT_RELEASE = {
@@ -99,6 +99,7 @@ export const DEFAULT_SETTINGS = {
   "tkbk.welcome.showOnStartup": true,
   "gitlens.showWhatsNewAfterUpgrades": false,
   "gitlens.telemetry.enabled": false,
+  "gitlens.graph.layout": "editor",
   "workbench.welcomePage.walkthroughs.openOnInstall": false,
 };
 

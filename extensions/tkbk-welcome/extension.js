@@ -226,6 +226,7 @@ function renderHtml(webview, extensionUri) {
   .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
   footer { margin-top: 36px; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; gap: 16px; flex-wrap: wrap; }
   label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  kbd { font: inherit; font-size: 12px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--vscode-widget-border, var(--line)); background: var(--vscode-editor-background); color: var(--vscode-foreground); }
   input[type=checkbox] { accent-color: var(--accent); }
   @media (prefers-reduced-motion: no-preference) {
     .card { transition: border-color .2s ease; }
@@ -265,6 +266,21 @@ function renderHtml(webview, extensionUri) {
   </div>
 
   <div class="status"><span class="dot"></span>${escapeHtml(agentLine)}</div>
+
+  <div class="grid" style="margin-top:16px">
+    <section class="card">
+      <span class="n">Tab</span>
+      <h2>Автодополнение кода</h2>
+      <p>Серые подсказки при вводе, принимаются клавишей Tab. Работают через шлюз TKBK на быстрой модели каталога; ключ тот же <b>cr_…</b>.</p>
+      <button class="secondary" data-cmd="tabkey">Указать ключ для подсказок</button>
+    </section>
+    <section class="card">
+      <span class="n">Клавиши</span>
+      <h2>Как в Cursor</h2>
+      <p><kbd>Ctrl+L</kbd> — чат с агентом (с выделением — добавить код), <kbd>Ctrl+I</kbd> — улучшить выделенное, <kbd>Ctrl+Shift+I</kbd> — новая задача, <kbd>Ctrl+Alt+H</kbd> — эта страница.</p>
+      <button class="secondary" data-cmd="layout">Агент справа / слева</button>
+    </section>
+  </div>
 
   <div class="links">
     <button class="secondary" data-cmd="docs">Документация</button>
@@ -335,15 +351,109 @@ function openWelcome(context) {
         return vscode.commands.executeCommand("workbench.action.openWalkthrough", "tkbk-online.tkbk-welcome#tkbk.gettingStarted", false);
       case "extensions":
         return vscode.commands.executeCommand("workbench.view.extensions");
+      case "tabkey":
+        return vscode.commands.executeCommand("tkbk.completion.setApiKey");
+      case "layout": {
+        const pick = await vscode.window.showQuickPick(
+          [
+            { label: "$(layout-sidebar-right) Агент справа (как в Cursor)", where: "right" },
+            { label: "$(layout-sidebar-left) Агент слева (в основной панели)", where: "left" },
+          ],
+          { title: "Где показывать TKBK Agent" },
+        );
+        if (pick) await moveAgent(pick.where);
+        return;
+      }
       default:
         return openExternal(l.homepage);
     }
   });
 }
 
+const AGENT_VIEW_ID = "tkbk-agent.SidebarProvider";
+const RIGHT_CONTAINER = "workbench.view.extension.tkbk-agent-right";
+
+/** Resolves to the activated agent extension, or undefined (not installed / disabled in a restricted workspace). */
+async function agentReady() {
+  const l = links();
+  const ext = vscode.extensions.getExtension(l.agentExtensionId);
+  if (!ext) return undefined;
+  try {
+    if (!ext.isActive) await ext.activate();
+  } catch {
+    return undefined;
+  }
+  return ext;
+}
+
+/** Move the agent's webview view between the primary side bar (its own container) and the secondary side bar. */
+async function moveAgent(where, { quiet = false } = {}) {
+  const l = links();
+  if (!(await agentReady())) {
+    if (!quiet) {
+      vscode.window.showWarningMessage(
+        "TKBK Agent сейчас недоступен (не установлен или папка открыта в ограниченном режиме). Доверьте папку и повторите.",
+      );
+    }
+    return false;
+  }
+  const destinationId = where === "right" ? RIGHT_CONTAINER : l.agentViewContainer;
+  await vscode.commands.executeCommand("vscode.moveViews", { viewIds: [AGENT_VIEW_ID], destinationId });
+  if (where === "right") await vscode.commands.executeCommand("workbench.action.focusAuxiliaryBar").then(undefined, () => {});
+  return true;
+}
+
+/**
+ * First start: put the agent on the right (Cursor-like). In a restricted workspace the agent is disabled,
+ * so keep retrying when the extension set changes (folder trusted → extension host restarts/enables).
+ */
+function scheduleFirstRunLayout(context) {
+  const l = links();
+  let done = false;
+  const attempt = async () => {
+    if (done) return;
+    const right = vscode.workspace.getConfiguration("tkbk.layout").get("agentRight", true);
+    try {
+      const ok = right ? await moveAgent("right", { quiet: true }) : !!(await agentReady());
+      if (!ok) return;
+      if (!right) await vscode.commands.executeCommand(l.agentViewContainer);
+      done = true;
+      await context.globalState.update(STATE_FIRST_RUN, true);
+      // Explorer on the left, agent on the right, welcome page in the middle.
+      await vscode.commands.executeCommand("workbench.view.explorer").then(undefined, () => {});
+      vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup").then(undefined, () => {});
+    } catch (err) {
+      console.error("[tkbk-welcome] layout failed", err);
+    }
+  };
+  setTimeout(attempt, 1500);
+  const sub = vscode.extensions.onDidChange(() => setTimeout(attempt, 1000));
+  context.subscriptions.push(sub);
+  setTimeout(() => sub.dispose(), 10 * 60 * 1000);
+}
+
+/** Other bundled extensions open their own pages on first start; keep the TKBK page in front for a while. */
+function keepWelcomeInFront(context) {
+  const until = Date.now() + 90_000;
+  let reveals = 0;
+  const isForeignWebview = (tab) =>
+    tab && tab.input instanceof vscode.TabInputWebview && !String(tab.input.viewType).includes("tkbk.welcome");
+  const sub = vscode.window.tabGroups.onDidChangeTabs((e) => {
+    if (!panel || Date.now() > until || reveals >= 6) return sub.dispose();
+    // Only react to webview pages other extensions open by themselves (GitLens welcome, etc.).
+    if (!e.opened.some(isForeignWebview)) return;
+    reveals++;
+    setTimeout(() => panel && !panel.active && panel.reveal(vscode.ViewColumn.One, false), 600);
+  });
+  context.subscriptions.push(sub);
+  setTimeout(() => sub.dispose(), 95_000);
+}
+
 function activate(context) {
   const l = links();
   context.subscriptions.push(
+    vscode.commands.registerCommand("tkbk.layout.agentRight", () => moveAgent("right")),
+    vscode.commands.registerCommand("tkbk.layout.agentLeft", () => moveAgent("left")),
     vscode.commands.registerCommand("tkbk.welcome.open", () => openWelcome(context)),
     vscode.commands.registerCommand("tkbk.openLogin", () => openExternal(links().login)),
     vscode.commands.registerCommand("tkbk.openBuy", () => openExternal(links().buy)),
@@ -385,19 +495,11 @@ function activate(context) {
   const hasEditors = vscode.window.visibleTextEditors.length > 0;
   if (show && !hasEditors) openWelcome(context); // don't steal focus from a restored project
 
-  // Very first start: show the TKBK Agent in the side bar next to the welcome page.
+  // Very first start: TKBK Agent next to the welcome page (on the right unless tkbk.layout.agentRight is off),
+  // and the TKBK page stays in front of pages other extensions open on their first start.
   if (!context.globalState.get(STATE_FIRST_RUN)) {
-    context.globalState.update(STATE_FIRST_RUN, true);
-    setTimeout(() => {
-      vscode.commands.executeCommand(l.agentViewContainer).then(
-        () => vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup"),
-        () => {},
-      );
-    }, 1500);
-    // Other bundled extensions may open their own pages on first start; keep TKBK in front.
-    setTimeout(() => {
-      if (panel) panel.reveal(vscode.ViewColumn.One, false);
-    }, 4000);
+    scheduleFirstRunLayout(context);
+    if (show && !hasEditors) keepWelcomeInFront(context);
   }
 }
 
