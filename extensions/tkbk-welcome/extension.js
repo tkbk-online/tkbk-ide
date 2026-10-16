@@ -271,8 +271,8 @@ function renderHtml(webview, extensionUri) {
     <section class="card">
       <span class="n">Tab</span>
       <h2>Автодополнение кода</h2>
-      <p>Серые подсказки при вводе, принимаются клавишей Tab. Работают через шлюз TKBK на быстрой модели каталога; ключ тот же <b>cr_…</b>.</p>
-      <button class="secondary" data-cmd="tabkey">Указать ключ для подсказок</button>
+      <p>Серые подсказки при вводе, принимаются клавишей Tab. Встроены в TKBK Agent: тот же ключ <b>cr_…</b>, быстрая модель каталога, настройки <b>tkbk-agent.tab.*</b>.</p>
+      <button class="secondary" data-cmd="tabkey">Настройки подсказок</button>
     </section>
     <section class="card">
       <span class="n">Клавиши</span>
@@ -351,8 +351,13 @@ function openWelcome(context) {
         return vscode.commands.executeCommand("workbench.action.openWalkthrough", "tkbk-online.tkbk-welcome#tkbk.gettingStarted", false);
       case "extensions":
         return vscode.commands.executeCommand("workbench.view.extensions");
-      case "tabkey":
-        return vscode.commands.executeCommand("tkbk.completion.setApiKey");
+      case "tabkey": {
+        // Tab lives inside TKBK Agent; the standalone tkbk-complete is a fallback for other editors.
+        const cmds = await vscode.commands.getCommands(true);
+        if (cmds.includes("tkbk-agent.tab.menu")) return vscode.commands.executeCommand("tkbk-agent.tab.menu");
+        if (cmds.includes("tkbk.completion.menu")) return vscode.commands.executeCommand("tkbk.completion.menu");
+        return openAgent();
+      }
       case "layout": {
         const pick = await vscode.window.showQuickPick(
           [

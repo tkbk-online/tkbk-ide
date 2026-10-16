@@ -49,7 +49,8 @@ export const MARKETPLACE_EXTENSIONS = [
 ];
 
 /** Extensions bundled as built-in (resources/app/extensions). */
-export const BUILTIN_EXTENSIONS_FROM_REPO = ["tkbk-welcome", "tkbk-theme", "tkbk-complete"];
+// tkbk-complete stays in the repo as a standalone extension for other editors; TKBK Agent ships its own Tab.
+export const BUILTIN_EXTENSIONS_FROM_REPO = ["tkbk-welcome", "tkbk-theme"];
 
 /** Where to get the TKBK Agent .vsix when --agent-vsix is not given. */
 export const AGENT_RELEASE = {
