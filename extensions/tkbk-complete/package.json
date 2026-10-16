@@ -6,23 +6,60 @@
   "publisher": "tkbk-online",
   "license": "MIT",
   "icon": "icon.png",
-  "engines": { "vscode": "^1.101.0" },
-  "categories": ["Programming Languages", "Machine Learning", "Other"],
-  "repository": { "type": "git", "url": "https://github.com/tkbk-online/tkbk-ide" },
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tkbk-online/tkbk-ide"
+  },
   "main": "./extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "capabilities": {
-    "untrustedWorkspaces": { "supported": true },
+    "untrustedWorkspaces": {
+      "supported": true
+    },
     "virtualWorkspaces": true
   },
   "contributes": {
     "commands": [
-      { "command": "tkbk.completion.setApiKey", "title": "Tab-автодополнение: указать ключ TKBK", "category": "TKBK IDE" },
-      { "command": "tkbk.completion.clearApiKey", "title": "Tab-автодополнение: удалить сохранённый ключ", "category": "TKBK IDE" },
-      { "command": "tkbk.completion.toggle", "title": "Tab-автодополнение: включить/выключить", "category": "TKBK IDE" },
-      { "command": "tkbk.completion.selectModel", "title": "Tab-автодополнение: выбрать модель", "category": "TKBK IDE" },
-      { "command": "tkbk.completion.menu", "title": "Tab-автодополнение: меню", "category": "TKBK IDE" },
-      { "command": "tkbk.completion.showLog", "title": "Tab-автодополнение: показать журнал", "category": "TKBK IDE" }
+      {
+        "command": "tkbk.completion.setApiKey",
+        "title": "Tab-автодополнение: указать ключ TKBK",
+        "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.completion.clearApiKey",
+        "title": "Tab-автодополнение: удалить сохранённый ключ",
+        "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.completion.toggle",
+        "title": "Tab-автодополнение: включить/выключить",
+        "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.completion.selectModel",
+        "title": "Tab-автодополнение: выбрать модель",
+        "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.completion.menu",
+        "title": "Tab-автодополнение: меню",
+        "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.completion.showLog",
+        "title": "Tab-автодополнение: показать журнал",
+        "category": "TKBK IDE"
+      }
     ],
     "configuration": {
       "title": "TKBK Tab (автодополнение)",
@@ -44,7 +81,7 @@
         },
         "tkbk.completion.debounceMs": {
           "type": "number",
-          "default": 250,
+          "default": 150,
           "minimum": 0,
           "maximum": 2000,
           "description": "Пауза после ввода перед запросом подсказки, мс."
@@ -58,7 +95,11 @@
         },
         "tkbk.completion.multiline": {
           "type": "string",
-          "enum": ["auto", "always", "never"],
+          "enum": [
+            "auto",
+            "always",
+            "never"
+          ],
           "default": "auto",
           "enumDescriptions": [
             "Несколько строк, когда курсор в начале новой строки или после открывающей скобки",
@@ -76,8 +117,17 @@
         },
         "tkbk.completion.disabledLanguages": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["plaintext", "log", "dotenv", "ini", "properties", "scminput"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "plaintext",
+            "log",
+            "dotenv",
+            "ini",
+            "properties",
+            "scminput"
+          ],
           "description": "Языки, для которых подсказки не показываются."
         },
         "tkbk.completion.timeoutMs": {
@@ -89,12 +139,24 @@
     },
     "menus": {
       "commandPalette": [
-        { "command": "tkbk.completion.setApiKey" },
-        { "command": "tkbk.completion.clearApiKey" },
-        { "command": "tkbk.completion.toggle" },
-        { "command": "tkbk.completion.selectModel" },
-        { "command": "tkbk.completion.menu" },
-        { "command": "tkbk.completion.showLog" }
+        {
+          "command": "tkbk.completion.setApiKey"
+        },
+        {
+          "command": "tkbk.completion.clearApiKey"
+        },
+        {
+          "command": "tkbk.completion.toggle"
+        },
+        {
+          "command": "tkbk.completion.selectModel"
+        },
+        {
+          "command": "tkbk.completion.menu"
+        },
+        {
+          "command": "tkbk.completion.showLog"
+        }
       ]
     }
   }

@@ -17,6 +17,7 @@ let pausedUntil = 0;
 let warnedNoKey = false;
 let lastCompletion = null;
 const cache = new lib.LruCache(64);
+const recentEdits = new lib.RecentEdits();
 
 const cfg = () => vscode.workspace.getConfiguration("tkbk.completion");
 const log = (...a) => output && output.appendLine(`[${new Date().toISOString()}] ${a.join(" ")}`);
@@ -130,7 +131,7 @@ function createProvider(context) {
       if (cached !== undefined) return toItems(cached);
 
       if (ctx.triggerKind === vscode.InlineCompletionTriggerKind.Automatic) {
-        const ok = await sleep(conf.get("debounceMs", 250), token);
+        const ok = await sleep(conf.get("debounceMs", 150), token);
         if (!ok || token.isCancellationRequested) return [];
       }
 
@@ -160,6 +161,7 @@ function createProvider(context) {
             suffix,
             language: document.languageId,
             fileName: vscode.workspace.asRelativePath(document.uri),
+            recentEdits: recentEdits.format(Date.now(), vscode.workspace.asRelativePath(document.uri)),
             maxTokens: multiline ? conf.get("maxTokens", 160) : Math.min(conf.get("maxTokens", 160), 64),
             stop: lib.stopSequences(multiline),
           },
@@ -219,6 +221,17 @@ function activate(context) {
   context.subscriptions.push(output, status);
 
   context.subscriptions.push(
+    // Remember what the developer just edited elsewhere: 2 lines around each change.
+    vscode.workspace.onDidChangeTextDocument((e) => {
+      if (e.document.uri.scheme !== "file" || lib.isSensitiveFile(e.document.fileName)) return;
+      for (const change of e.contentChanges) {
+        const line = change.range.start.line;
+        const from = Math.max(0, line - 1);
+        const to = Math.min(e.document.lineCount - 1, line + 1);
+        const snippet = e.document.getText(new vscode.Range(from, 0, to, e.document.lineAt(to).text.length));
+        recentEdits.record({ file: vscode.workspace.asRelativePath(e.document.uri), line: line + 1, snippet });
+      }
+    }),
     vscode.languages.registerInlineCompletionItemProvider({ pattern: "**" }, createProvider(context)),
     vscode.commands.registerCommand("tkbk.completion.setApiKey", async () => {
       const value = await vscode.window.showInputBox({

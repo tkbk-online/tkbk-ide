@@ -3,7 +3,7 @@
 
 const SYSTEM_PROMPT = [
   "You are a code completion engine inside an IDE.",
-  "You receive the text before the cursor (PREFIX) and after the cursor (SUFFIX).",
+  "You receive the text before the cursor (PREFIX) and after the cursor (SUFFIX), and sometimes the developer's RECENT_EDITS in other places of the project for context.",
   "Return ONLY the code to insert at the cursor: no explanations, no markdown fences, no repetition of PREFIX or SUFFIX.",
   "Match the language, indentation and style of the surrounding code. Keep it short: finish the current statement or block.",
   "If nothing useful can be inserted, return an empty string.",
@@ -15,12 +15,18 @@ function isClaudeModel(model) {
   return /^claude/i.test(String(model || ""));
 }
 
-/** Build the request for the TKBK gateway. Returns { url, headers, body }. */
-function buildRequest({ baseUrl, apiKey, model, prefix, suffix, language, fileName, maxTokens, stop }) {
+/**
+ * Build the request for the TKBK gateway. Returns { url, headers, body }.
+ * The static system prompt goes first and the dynamic parts last so the gateway's
+ * prompt cache keeps hitting on the stable prefix.
+ */
+function buildRequest({ baseUrl, apiKey, model, prefix, suffix, language, fileName, maxTokens, stop, recentEdits }) {
   const base = String(baseUrl || "https://api.tkbk.online/v1").replace(/\/+$/, "");
+  const recent = recentEdits && recentEdits.trim() ? ["<RECENT_EDITS>", recentEdits.trim(), "</RECENT_EDITS>", ""] : [];
   const user = [
     `File: ${fileName || "untitled"} (${language || "text"})`,
     "",
+    ...recent,
     "<PREFIX>",
     prefix,
     "</PREFIX>",
@@ -199,6 +205,40 @@ function reuseFromPrevious(prev, prefix) {
   return rest.trim() ? rest : null;
 }
 
+/**
+ * The developer's latest edits across files: a few short snippets the model sees as
+ * extra context ("what am I in the middle of"). Deduplicated by file + line, newest first,
+ * forgotten after `maxAgeMs`.
+ */
+class RecentEdits {
+  constructor({ limit = 5, maxAgeMs = 5 * 60_000, snippetChars = 240 } = {}) {
+    this.limit = limit;
+    this.maxAgeMs = maxAgeMs;
+    this.snippetChars = snippetChars;
+    this.items = [];
+  }
+  /** @param {{file:string, line:number, snippet:string}} edit */
+  record(edit, now = Date.now()) {
+    const snippet = String(edit.snippet || "").replace(/\s+$/, "");
+    if (!snippet.trim()) return;
+    const key = `${edit.file}:${edit.line}`;
+    this.items = this.items.filter((it) => it.key !== key);
+    this.items.unshift({ key, file: edit.file, line: edit.line, snippet: snippet.slice(0, this.snippetChars), at: now });
+    this.items = this.items.slice(0, this.limit);
+  }
+  /** Compact block for the prompt; `excludeFile` drops edits in the file being completed. */
+  format(now = Date.now(), excludeFile) {
+    this.items = this.items.filter((it) => now - it.at <= this.maxAgeMs);
+    return this.items
+      .filter((it) => !excludeFile || it.file !== excludeFile)
+      .map((it) => `${it.file}:${it.line}\n${it.snippet}`)
+      .join("\n---\n");
+  }
+  clear() {
+    this.items = [];
+  }
+}
+
 const SENSITIVE_FILE_RE = /(^|[\\/])(\.env(\..*)?|.*\.(pem|key|p12|pfx|kdbx)|id_rsa.*|secrets?\.(json|ya?ml|toml))$/i;
 
 function isSensitiveFile(fileName) {
@@ -221,4 +261,5 @@ module.exports = {
   isClaudeModel,
   stopSequences,
   longestOverlap,
+  RecentEdits,
 };

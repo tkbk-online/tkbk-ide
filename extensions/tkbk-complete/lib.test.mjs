@@ -120,3 +120,26 @@ test("end-to-end against a mock gateway (both protocols)", async () => {
     server.close();
   }
 });
+
+test("buildRequest: recent edits come before PREFIX and are optional", () => {
+  const withEdits = lib.buildRequest({ apiKey: "k", model: "glm-5.3", prefix: "p", suffix: "s", maxTokens: 8, stop: [], recentEdits: "src/a.ts:3\nconst a = 1" });
+  const body = withEdits.body.messages[1].content;
+  assert.ok(body.indexOf("<RECENT_EDITS>") < body.indexOf("<PREFIX>"));
+  assert.match(body, /src\/a\.ts:3\nconst a = 1/);
+  const without = lib.buildRequest({ apiKey: "k", model: "glm-5.3", prefix: "p", suffix: "s", maxTokens: 8, stop: [], recentEdits: "" });
+  assert.doesNotMatch(without.body.messages[1].content, /RECENT_EDITS/);
+});
+
+test("RecentEdits: newest first, deduped by file+line, expiring, excluding the current file", () => {
+  const edits = new lib.RecentEdits({ limit: 3, maxAgeMs: 1000 });
+  edits.record({ file: "a.ts", line: 1, snippet: "one" }, 0);
+  edits.record({ file: "b.ts", line: 5, snippet: "five" }, 10);
+  edits.record({ file: "a.ts", line: 1, snippet: "one-again" }, 20);
+  edits.record({ file: "c.ts", line: 2, snippet: "   " }, 30);
+  assert.equal(edits.format(40), "a.ts:1\none-again\n---\nb.ts:5\nfive");
+  assert.equal(edits.format(40, "a.ts"), "b.ts:5\nfive");
+  edits.record({ file: "d.ts", line: 1, snippet: "d" }, 50);
+  edits.record({ file: "e.ts", line: 1, snippet: "e" }, 60);
+  assert.equal(edits.items.length, 3);
+  assert.equal(edits.format(2000), "");
+});
