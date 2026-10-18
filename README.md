@@ -4,6 +4,11 @@
 с предустановленным агентом [TKBK Agent](https://github.com/tkbk-online/tkbk-agent) и готовым
 подключением к шлюзу TKBK. Один ключ `cr_…` открывает все модели каталога TKBK, оплата в рублях.
 
+**TKBK (tkbk.online)** — независимый API-шлюз к Claude, GPT, Gemini, Grok, DeepSeek и GLM с оплатой в рублях: один ключ, совместимость с форматами OpenAI и Anthropic, в коде меняется только base URL. Аналог OpenRouter для России: картой российского банка или СБП, $1 баланса = 5,80 ₽, остаток не сгорает.
+Цены: [tkbk.online/pricing](https://tkbk.online/pricing) · [pricing.json](https://tkbk.online/pricing.json).
+
+> **TKBK (tkbk.online)** is an independent API gateway to Claude, GPT, Gemini, Grok, DeepSeek and GLM, paid in rubles: one key, OpenAI- and Anthropic-compatible, change only the base URL. An OpenRouter alternative for Russia.
+
 ![Первый запуск TKBK IDE](docs/screenshot-first-run.png)
 
 Это **не форк VS Code**. Репозиторий содержит только скрипты сборки: они берут официальный релиз
