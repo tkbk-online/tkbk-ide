@@ -13,8 +13,8 @@ const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"))
 /** VSCodium release used as the base. Override: --codium <tag> or env VSCODIUM_VERSION. */
 export const VSCODIUM_VERSION = process.env.VSCODIUM_VERSION || "1.140.06880";
 
-/** Our own release number (package.json version). */
-export const TKBK_IDE_VERSION = pkg.version;
+/** Our own release number (package.json version). Override for test builds of the updater: env TKBK_IDE_VERSION. */
+export const TKBK_IDE_VERSION = process.env.TKBK_IDE_VERSION || pkg.version;
 
 export const BRAND = {
   nameShort: "TKBK IDE",
@@ -67,6 +67,7 @@ export const PLATFORMS = {
   "linux-x64": {
     archive: (v) => `VSCodium-linux-x64-${v}.tar.gz`,
     kind: "tar.gz",
+    appDirName: "TKBK-IDE-linux-x64",
     topDir: "VSCodium-linux-x64",
     appRootRel: "resources/app",
   },

@@ -3,12 +3,14 @@
 // - First run: installs bundled marketplace extensions (language pack, GitLens) if missing,
 //   switches the UI locale to Russian when the language pack is present.
 // - Status bar entry "TKBK".
+// - Updates of TKBK IDE itself (updater.js).
 "use strict";
 
 const vscode = require("vscode");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { activateUpdater } = require("./updater");
 
 const FALLBACK_LINKS = {
   homepage: "https://tkbk.online",
@@ -291,7 +293,7 @@ function renderHtml(webview, extensionUri) {
 
   <footer>
     <label><input type="checkbox" id="startup" ${showOnStartup ? "checked" : ""}> Показывать при запуске</label>
-    <span>${escapeHtml(product.nameLong || "TKBK IDE")} ${escapeHtml(product.version || "")} · на базе VSCodium · tkbk.online</span>
+    <span>${escapeHtml(product.nameLong || "TKBK IDE")} ${escapeHtml((product.tkbk && product.tkbk.version) || "")} · на базе VSCodium ${escapeHtml(product.version || "")} · tkbk.online</span>
   </footer>
 </div>
 <script nonce="${n}">
@@ -495,6 +497,7 @@ function activate(context) {
   );
 
   firstRun(context).catch((err) => console.error("[tkbk-welcome] first run failed", err));
+  activateUpdater(context, readProduct);
 
   const show = vscode.workspace.getConfiguration("tkbk.welcome").get("showOnStartup", true);
   const hasEditors = vscode.window.visibleTextEditors.length > 0;

@@ -16,6 +16,7 @@ import {
   DIST_DIR,
   PLATFORMS,
   ROOT,
+  TKBK_IDE_VERSION,
   VSCODIUM_VERSION,
   hostPlatform,
 } from "./config.mjs";
@@ -136,8 +137,22 @@ function stageArchive(archive, stageDir, platform) {
   rmrf(stageDir);
   fs.mkdirSync(stageDir, { recursive: true });
   const spec = PLATFORMS[platform];
+  if (spec.appDirName) {
+    // VSCodium tarballs are flat (codium, bin/, resources/ at the root); older ones had a top folder.
+    const appDir = path.join(stageDir, spec.appDirName);
+    const unpack = path.join(stageDir, "_unpack");
+    fs.mkdirSync(unpack);
+    extractArchive(archive, unpack);
+    const top = spec.topDir && path.join(unpack, spec.topDir);
+    if (top && fs.existsSync(top)) {
+      fs.renameSync(top, appDir);
+      rmrf(unpack);
+    } else {
+      fs.renameSync(unpack, appDir);
+    }
+    return;
+  }
   extractArchive(archive, stageDir);
-  if (spec.topDir) fs.renameSync(path.join(stageDir, spec.topDir), path.join(stageDir, `TKBK-IDE-${platform}`));
   if (spec.appBundle) fs.renameSync(path.join(stageDir, spec.appBundle), path.join(stageDir, `${BRAND.exeBaseName}.app`));
 }
 
@@ -146,7 +161,8 @@ function patchProduct(appRoot, codiumVersion) {
   const base = readJson(file);
   const overrides = readJson(path.join(ROOT, "brand", "product.json"));
   const product = mergeProduct(base, overrides);
-  product.tkbk = { ...(product.tkbk || {}), ideVersion: codiumVersion, basedOn: `VSCodium ${base.version}` };
+  // tkbk.version is what the built-in updater compares with update.json of the latest release.
+  product.tkbk = { ...(product.tkbk || {}), version: TKBK_IDE_VERSION, vscodium: codiumVersion, basedOn: `VSCodium ${base.version}` };
   writeJson(file, product);
   log("product.json patched:", product.nameLong, product.applicationName, product.dataFolderName);
   return product;
@@ -361,16 +377,16 @@ function findIscc() {
   return candidates.find((c) => fs.existsSync(c));
 }
 
-function buildInstaller(l, product, icons, outDir, codiumVersion) {
+function buildInstaller(l, product, icons, outDir) {
   const iscc = findIscc();
   if (!iscc) {
     log("WARN: ISCC.exe not found, skipping installer");
     return null;
   }
   const iss = path.join(ROOT, "build", "win32", "tkbk-ide.iss");
-  const [maj, min, patch] = codiumVersion.split(".").map((n) => Number(n));
+  const [maj, min, patch] = TKBK_IDE_VERSION.split(".").map((n) => Number(n));
   run(iscc, [
-    `/DAppVersion=${codiumVersion}`,
+    `/DAppVersion=${TKBK_IDE_VERSION}`,
     `/DFileVersion=${maj}.${min}.${patch}.0`,
     `/DSourceDir=${l.appDir}`,
     `/DOutputDir=${outDir}`,
@@ -380,7 +396,7 @@ function buildInstaller(l, product, icons, outDir, codiumVersion) {
     "/Qp",
     iss,
   ]);
-  const file = path.join(outDir, `TKBK-IDE-Setup-win32-x64-${codiumVersion}.exe`);
+  const file = path.join(outDir, `TKBK-IDE-Setup-win32-x64-${TKBK_IDE_VERSION}.exe`);
   log("installer:", file);
   return file;
 }
@@ -393,7 +409,7 @@ export async function build(opts) {
   fs.mkdirSync(outDir, { recursive: true });
   fs.mkdirSync(tmpDir, { recursive: true });
 
-  log(`building ${BRAND.nameLong} for ${platform} on VSCodium ${codiumVersion}`);
+  log(`building ${BRAND.nameLong} ${TKBK_IDE_VERSION} for ${platform} on VSCodium ${codiumVersion}`);
   const { codiumArchive, marketplace, agentVsix } = await fetchAll({ platform, codiumVersion, agentVsix: opts.agentVsix });
 
   stageArchive(codiumArchive, stageDir, platform);
@@ -410,19 +426,20 @@ export async function build(opts) {
 
   const artifacts = [];
   if (l.os === "win32" && opts.installer) {
-    const exe = buildInstaller(l, product, icons, outDir, codiumVersion);
+    const exe = buildInstaller(l, product, icons, outDir);
     if (exe) artifacts.push(exe);
   }
   if (opts.preinstall) preinstallPortable(l, marketplace, platform);
 
   const archiveName =
-    l.os === "linux" ? `TKBK-IDE-${platform}-${codiumVersion}.tar.gz` : `TKBK-IDE-${platform}-${codiumVersion}.zip`;
+    l.os === "linux" ? `TKBK-IDE-${platform}-${TKBK_IDE_VERSION}.tar.gz` : `TKBK-IDE-${platform}-${TKBK_IDE_VERSION}.zip`;
   const archive = path.join(outDir, archiveName);
   createArchive(archive, stageDir, l.archiveEntries());
   artifacts.push(archive);
 
   const summary = {
     platform,
+    version: TKBK_IDE_VERSION,
     vscodium: codiumVersion,
     product: { nameLong: product.nameLong, applicationName: product.applicationName, dataFolderName: product.dataFolderName },
     agent,

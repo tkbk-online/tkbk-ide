@@ -87,7 +87,24 @@ VSCodium, меняют оболочку (`product.json`, иконки, имен�
 | Linux x64 | `TKBK-IDE-linux-x64-<версия>.tar.gz` (portable, `data/` внутри; `resources/tkbk-ide.desktop` для меню) | CI |
 | macOS arm64 / x64 | `TKBK-IDE-darwin-<arch>-<версия>.zip` с `TKBK IDE.app` (ad-hoc подпись) | CI |
 
-Версия TKBK IDE совпадает с версией VSCodium, на которой она собрана (сейчас `1.140.06880`).
+Версия TKBK IDE — своя (`package.json`, сейчас `0.3.0`), версия VSCodium-основы записана в
+`product.json` → `tkbk.vscodium` (сейчас `1.140.06880`). Тег релиза `vX.Y.Z` обязан совпадать с `package.json`.
+
+## Обновления
+
+Штатное обновление VS Code выключено (`updateUrl` не задан, `update.mode: none`): наш установщик — не
+установщик VS Code. Вместо него встроенное расширение `tkbk-welcome` (`updater.js`):
+
+- через 20 с после запуска и раз в 6 ч читает `https://github.com/tkbk-online/tkbk-ide/releases/latest/download/update.json`
+  (файл собирает `build/update-manifest.mjs` в release-job; черновики релизов пользователям не видны);
+- установка через установщик Windows: скачивает новый установщик в `%TEMP%\tkbk-ide-update\<версия>`, сверяет sha256,
+  предлагает «Перезапустить и обновить» — PowerShell-помощник ждёт закрытия всех окон, ставит обновление
+  тихо (`/VERYSILENT`, та же папка и задачи) и снова запускает редактор;
+- portable zip, Linux, macOS: уведомление со ссылкой на новый архив;
+- настройки `tkbk.update.mode` (`auto` / `notify` / `off`) и `tkbk.update.url` (свой сервер для проверки),
+  команда «TKBK IDE: Проверить обновления», журнал — вывод «TKBK IDE: обновления».
+
+TKBK Agent встроен в сборку и обновляется вместе с IDE.
 
 Что делает установщик Windows: копирует редактор в `%LOCALAPPDATA%\Programs\TKBK IDE`
 (или `Program Files` при выборе установки для всех), создаёт ярлыки, по желанию — пункт
@@ -144,7 +161,8 @@ node build/build.mjs --platform win32-x64 --agent-vsix path/to/tkbk-agent-0.1.0.
 
 `.github/workflows/build.yml`: матрица Windows / Linux / macOS (arm64, x64). Запуск вручную
 (можно указать версию VSCodium и URL `.vsix` агента) или по тегу `v*` — тогда создаётся черновик
-релиза с артефактами и sha256. По умолчанию `.vsix` агента берётся из последнего релиза
+релиза с артефактами, sha256 и `update.json`. Установленные копии увидят обновление, только когда
+черновик опубликован. По умолчанию `.vsix` агента берётся из последнего релиза
 репозитория `tkbk-online/tkbk-agent`.
 
 ## Структура

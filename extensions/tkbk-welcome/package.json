@@ -2,7 +2,7 @@
   "name": "tkbk-welcome",
   "displayName": "TKBK IDE: начало работы",
   "description": "Приветственная страница TKBK IDE, первый запуск, установка комплекта расширений.",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "publisher": "tkbk-online",
   "license": "MIT",
   "icon": "icon.png",
@@ -74,6 +74,11 @@
         "command": "tkbk.layout.agentLeft",
         "title": "Агент слева (в основной панели)",
         "category": "TKBK IDE"
+      },
+      {
+        "command": "tkbk.update.check",
+        "title": "Проверить обновления",
+        "category": "TKBK IDE"
       }
     ],
     "configuration": {
@@ -88,6 +93,27 @@
           "type": "boolean",
           "default": true,
           "description": "При первом запуске разместить TKBK Agent в правой боковой панели (как в Cursor). Поменять можно командами «Агент справа/слева»."
+        },
+        "tkbk.update.mode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "notify",
+            "off"
+          ],
+          "enumDescriptions": [
+            "Скачивать обновление в фоне и предлагать перезапуск",
+            "Только сообщать о новой версии",
+            "Не проверять обновления"
+          ],
+          "default": "auto",
+          "description": "Обновления TKBK IDE (проверка при запуске и раз в 6 часов)."
+        },
+        "tkbk.update.url": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Адрес `update.json` вместо последнего релиза на GitHub (для проверки обновлений на тестовом сервере). Пусто — `https://github.com/tkbk-online/tkbk-ide/releases/latest/download/update.json`.",
+          "scope": "machine"
         }
       }
     },
@@ -130,6 +156,9 @@
         },
         {
           "command": "tkbk.layout.agentLeft"
+        },
+        {
+          "command": "tkbk.update.check"
         }
       ]
     },
