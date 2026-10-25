@@ -33,7 +33,6 @@ import {
   readJson,
   rmrf,
   run,
-  tarBinary,
   writeJson,
 } from "./lib.mjs";
 
@@ -289,7 +288,7 @@ function installBuiltinExtensions(l, agentVsix, tmpDir) {
   const unpack = path.join(tmpDir, "agent-vsix");
   rmrf(unpack);
   fs.mkdirSync(unpack, { recursive: true });
-  run(tarBinary(), ["-xf", agentVsix, "-C", unpack]);
+  extractArchive(agentVsix, unpack);
   const manifest = readJson(path.join(unpack, "extension", "package.json"));
   const dest = path.join(extDir, manifest.name);
   rmrf(dest);

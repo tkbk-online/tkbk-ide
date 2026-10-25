@@ -95,6 +95,11 @@ export function extractArchive(archive, destDir) {
     run("ditto", ["-x", "-k", archive, destDir]);
     return;
   }
+  // GNU tar (Linux) does not read zip containers (.zip, .vsix); bsdtar on Windows and macOS does.
+  if (process.platform === "linux" && /\.(zip|vsix)$/i.test(archive)) {
+    run("unzip", ["-q", "-o", archive, "-d", destDir]);
+    return;
+  }
   run(tarBinary(), ["-xf", archive, "-C", destDir]);
 }
 
